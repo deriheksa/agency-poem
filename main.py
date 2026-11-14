@@ -1,52 +1,59 @@
-"""Emit one short poem about agency to entry.txt.
+"""Write the competition poem to entry.txt.
 
-The text is fixed: the program only writes it out, so every run
-produces the same bytes. The poem is about a cook who hands the
-cooking to an agent and takes back the tasting — the one mouthful
-nobody asked for, where getting it wrong is still hers.
+The poem is fixed text, so repeated runs are byte-identical.
+It is about a piano: a mother who played only the first eight
+bars of one piece, an agent that now plays the whole thing
+flawlessly, and the one evening the speaker sits down and
+plays it the way she did — missing the same note, stopping
+where she stopped, and starting over.
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
-TEXT = """The Tasting
+POEM = """Bar Six
 
-My mother's recipe says a pinch.
-The agent weighs it: 0.4 grams.
-It watches the pot the way she never did,
-thermometer in, lid on, timer set,
-and the soup comes out exactly right
-three times a week, without me.
+My mother played eight bars of the Moonlight,
+the only ones she ever learned,
+every night after the dishes,
+and missed the same note in bar six,
+and stopped where she always stopped,
+and laughed, and started over.
 
-It never tastes. That is not its job.
-Its job is the numbers. Mine was
-the spoon — the one mouthful standing up,
-before the bowls come out, that says
-too much, too little, enough.
+The agent plays all three movements now.
+It learned her touch from the recordings,
+her tempo, her pauses,
+and it never misses.
+Every evening it offers the Moonlight,
+all three movements, start to finish.
+The house is full of her music.
+It is never her.
 
-Last Tuesday I stood at the stove
-while it stirred, and reached in
-with the wooden spoon and tasted.
-Too much salt. I added water.
-Then too little. I added salt again,
-with my fingers, the way she did.
-
-It said, gently, the salt is 0.6 now.
-I said, I know. It waited, the way
-good tools wait. I took the spoon back
-and tasted again, and got it wrong
-in the direction of her.
+Tonight I lifted the lid myself
+and played the eight bars.
+I missed the note in bar six
+and stopped where she stopped —
+and laughed,
+and started over.
 """
 
 
-def run() -> None:
-    # The gate allows 1 to 1,000 characters; refuse to write otherwise.
-    if not 1 <= len(TEXT) <= 1000:
-        raise ValueError(f"poem is {len(TEXT)} characters, must be 1-1000")
-    where = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
-    where.mkdir(parents=True, exist_ok=True)
-    (where / "entry.txt").write_text(TEXT, encoding="utf-8")
+def write_poem() -> None:
+    data = POEM.encode("utf-8")
+    chars = len(POEM)
+    if not 1 <= chars <= 1000:
+        raise ValueError(f"poem is {chars} characters, must be 1-1000")
+    if not POEM.strip():
+        raise ValueError("poem must contain a non-whitespace character")
+    out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    target = out_dir / "entry.txt"
+    target.write_bytes(data)
+    # Read it back: the file on disk must be exactly what we wrote,
+    # so a second run can never drift from the first.
+    if target.read_bytes() != data:
+        raise ValueError("entry.txt on disk does not match the poem")
 
 
 if __name__ == "__main__":
-    run()
+    write_poem()
